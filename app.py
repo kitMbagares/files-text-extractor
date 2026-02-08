@@ -110,6 +110,7 @@ async def health_check():
     }
 
 
+@app.post("/upload")
 @app.post("/upload/")
 async def upload_file(
     file: UploadFile = File(...),

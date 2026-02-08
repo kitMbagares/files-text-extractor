@@ -64,7 +64,7 @@ EXTENSION_MAP = {
 # PDFs support all modes; other types only support "text" (auto-routed).
 VALID_MODES_PER_TYPE = {
     "pdf": {"text", "tables", "images", "ocr", "full"},
-    "image": {"text"},
+    "image": {"text", "ocr"},
     "docx": {"text"},
     "xlsx": {"text"},
     "csv": {"text"},

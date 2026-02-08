@@ -17,17 +17,32 @@ from config import API_KEY, MAX_FILE_SIZE, EXTENSION_MAP, VALID_MODES_PER_TYPE
 def verify_token(authorization: str = Header(None)):
     """Validate Bearer token against the configured API_KEY."""
     if not API_KEY:
-        raise HTTPException(status_code=500, detail="Server misconfigured: API_KEY not set.")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "server_misconfigured",
+                "message": "Server misconfigured: API_KEY not set.",
+            },
+        )
 
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=401,
-            detail="Missing or invalid Authorization header. Expected: Bearer <token>",
+            detail={
+                "error": "missing_token",
+                "message": "Missing or invalid Authorization header. Expected: Bearer <token>",
+            },
         )
 
     token = authorization.replace("Bearer ", "", 1)
     if token != API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid API token.")
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "invalid_token",
+                "message": "The provided API key is incorrect. Please check your token and try again.",
+            },
+        )
 
 
 # ── File type detection ─────────────────────────────────────────────
