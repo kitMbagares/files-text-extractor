@@ -87,6 +87,18 @@ Content-Type: multipart/form-data
 file: <your file>
 ```
 
+### URL Extraction Endpoint
+
+```
+POST /extract-url/?correct=true
+Authorization: Bearer your-secret
+Content-Type: application/json
+
+{
+  "url": "https://example.com/jobs/software-engineer"
+}
+```
+
 ### Query Parameters
 
 | Parameter | Default | Options | Description |
@@ -162,6 +174,14 @@ curl -X POST "http://localhost:8001/upload/" \
 curl -X POST "http://localhost:8001/upload/" \
   -H "Authorization: Bearer your-secret" \
   -F "file=@data.xlsx"
+```
+
+**Extract text from a job URL:**
+```sh
+curl -X POST "http://localhost:8001/extract-url/?correct=false" \
+  -H "Authorization: Bearer your-secret" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com/jobs/software-engineer"}'
 ```
 
 ## Vercel Deployment

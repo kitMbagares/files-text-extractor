@@ -15,6 +15,7 @@ import io
 import csv
 import pytest
 from unittest.mock import patch
+from urllib.error import HTTPError
 from httpx import AsyncClient, ASGITransport
 from fastapi import HTTPException
 from PIL import Image
@@ -109,6 +110,26 @@ def make_csv(rows=None):
     writer = csv.writer(buf)
     writer.writerows(rows)
     return buf.getvalue().encode("utf-8")
+
+
+class FakeHTTPResponse:
+    """Small test double for urllib responses used by URL extraction tests."""
+
+    def __init__(self, body, content_type="text/html; charset=utf-8", status=200):
+        self._body = body
+        self.headers = {"Content-Type": content_type}
+        self.status = status
+
+    def read(self, limit=-1):
+        if limit is None or limit < 0:
+            return self._body
+        return self._body[:limit]
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -577,3 +598,62 @@ class TestUploadEndpoint:
         data = resp.json()
         assert "processing_seconds" in data["metadata"]
         assert isinstance(data["metadata"]["processing_seconds"], float)
+
+
+@pytest.mark.anyio
+class TestExtractUrlEndpoint:
+    """Test POST /extract-url/ for HTML URL extraction."""
+
+    @pytest.fixture(autouse=True)
+    def _patch_api_key(self):
+        with patch("validators.API_KEY", API_KEY):
+            yield
+
+    async def _extract_url(self, payload, headers, params=None):
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            return await client.post("/extract-url/", json=payload, headers=headers, params=params)
+
+    async def test_missing_auth_returns_401(self):
+        resp = await self._extract_url({"url": "https://example.com/jobs/1"}, {})
+        assert resp.status_code == 401
+
+    async def test_invalid_url_returns_422(self, auth_header):
+        resp = await self._extract_url({"url": "not-a-url"}, auth_header)
+        assert resp.status_code == 422
+
+    async def test_extracts_visible_html_text(self, auth_header):
+        html = b"""
+        <html>
+          <head><title>Senior Backend Engineer</title><style>body { color: red; }</style></head>
+          <body><h1>Senior Backend Engineer</h1><p>Remote - United States</p><script>var hidden = 1;</script></body>
+        </html>
+        """
+        with patch("extractors.web.urlopen", return_value=FakeHTTPResponse(html)):
+            resp = await self._extract_url(
+                {"url": "https://careers.example.com/jobs/backend"},
+                auth_header,
+                params={"correct": "false"},
+            )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["source_type"] == "url"
+        assert data["url"] == "https://careers.example.com/jobs/backend"
+        assert "Senior Backend Engineer" in data["extracted_text"]
+        assert "Remote - United States" in data["extracted_text"]
+        assert "hidden = 1" not in data["extracted_text"]
+        assert data["metadata"]["title"] == "Senior Backend Engineer"
+        assert data["metadata"]["content_type"].startswith("text/html")
+
+    async def test_remote_http_error_returns_422(self, auth_header):
+        err = HTTPError(
+            url="https://example.com/jobs/closed",
+            code=404,
+            msg="Not Found",
+            hdrs=None,
+            fp=None,
+        )
+        with patch("extractors.web.urlopen", side_effect=err):
+            resp = await self._extract_url({"url": "https://example.com/jobs/closed"}, auth_header)
+        assert resp.status_code == 422
+        assert "HTTP 404" in resp.json()["detail"]

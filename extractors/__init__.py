@@ -6,4 +6,5 @@ Each module handles a specific file type:
   - ocr.py         : OCR for images and scanned PDFs (requires Tesseract)
   - docx_ext.py    : Word document (.docx) text extraction
   - spreadsheet.py : Excel (.xlsx) and CSV data extraction
+  - web.py         : URL page text extraction (HTML/plain text)
 """

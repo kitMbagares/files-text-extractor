@@ -13,12 +13,14 @@ This is the main router. All business logic lives in separate modules:
 API Endpoints:
   GET  /         — Health check (status, version, capabilities)
   POST /upload/  — Upload a file and extract content
+  POST /extract-url/ — Fetch a URL and extract page text
 """
 
 import time
 from fastapi import FastAPI, File, UploadFile, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import AnyHttpUrl, BaseModel
 from starlette.requests import Request
 import uvicorn
 
@@ -52,6 +54,7 @@ from extractors.pdf import (
 from extractors.ocr import ocr_image, ocr_pdf
 from extractors.docx_ext import extract_text_from_docx
 from extractors.spreadsheet import extract_data_from_xlsx, extract_data_from_csv
+from extractors.web import extract_text_from_url
 
 # ── Text processing ─────────────────────────────────────────────────
 from text_utils import flatten_table_to_text, correct_text
@@ -62,6 +65,12 @@ from text_utils import flatten_table_to_text, correct_text
 # ═══════════════════════════════════════════════════════════════════
 
 app = FastAPI(title="Extract-Kit", version="2.0.0")
+
+
+class URLExtractRequest(BaseModel):
+    """Request model for extracting visible text from a web URL."""
+
+    url: AnyHttpUrl
 
 # Allow cross-origin requests from configured frontend origins
 app.add_middleware(
@@ -206,6 +215,44 @@ async def upload_file(
     result["metadata"]["processing_seconds"] = elapsed
 
     return result
+
+
+@app.post("/extract-url")
+@app.post("/extract-url/")
+async def extract_url(
+    payload: URLExtractRequest,
+    correct: bool = Query(True),
+    _auth: None = Depends(verify_token),
+):
+    """
+    Fetch a URL and extract visible text content from the page.
+
+    Request body:
+      { "url": "https://example.com/job-posting" }
+
+    Query params:
+      - correct: true/false — apply grammar/spelling correction
+    """
+    start_time = time.time()
+
+    page_data = extract_text_from_url(str(payload.url))
+    extracted_text = page_data["text"]
+    corrected_text = None
+    if correct and extracted_text.strip():
+        corrected_text = correct_text(extracted_text)
+
+    elapsed = round(time.time() - start_time, 3)
+    return {
+        "url": str(payload.url),
+        "source_type": "url",
+        "extracted_text": extracted_text,
+        "corrected_text": corrected_text,
+        "metadata": {
+            "title": page_data["title"],
+            "content_type": page_data["content_type"],
+            "processing_seconds": elapsed,
+        },
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════
