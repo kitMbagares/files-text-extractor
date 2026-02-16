@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: pdf-extractor
+    runtime: docker
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: API_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: https://your-frontend-domain.com
+      - key: OCR_PROVIDER
+        value: local
+      - key: MAX_FILE_SIZE
+        value: "52428800"
