@@ -1,9 +1,6 @@
-# PDF-Extractor
-![Screenshot 2025-01-22 133005](https://github.com/user-attachments/assets/49f08561-500f-4997-b925-47f264565f6a)
-
 ## About
 
-PDF-Extractor is a FastAPI backend that allows users to upload files, extract text/tables/images from them, and correct the text using language tools. Supports PDFs, images (OCR), Word documents, Excel spreadsheets, and CSV files.
+File-Extractor is a FastAPI backend that allows users to upload files, extract text/tables/images from them, and correct the text using language tools. Supports PDFs, images (OCR), Word documents, Excel spreadsheets, and CSV files.
 
 ## Supported File Types
 
