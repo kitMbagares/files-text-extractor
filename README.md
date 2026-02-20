@@ -133,50 +133,50 @@ Content-Type: application/json
 
 **Extract text from a PDF:**
 ```sh
-curl -X POST "http://localhost:8001/upload/?mode=text" \
-  -H "Authorization: Bearer your-secret" \
+curl -X POST "http://localhost:8000/upload/?mode=text" \
+  -H "Authorization: Bearer T8zwjzSzc9R12lUFw8LeuhKZ6BIJd-ITsq6SvuQQVNI" \
   -F "file=@document.pdf"
 ```
 
 **Extract tables from a PDF:**
 ```sh
-curl -X POST "http://localhost:8001/upload/?mode=tables" \
-  -H "Authorization: Bearer your-secret" \
+curl -X POST "http://localhost:8000/upload/?mode=tables" \
+  -H "Authorization: Bearer T8zwjzSzc9R12lUFw8LeuhKZ6BIJd-ITsq6SvuQQVNI" \
   -F "file=@spreadsheet.pdf"
 ```
 
 **Extract everything from a PDF:**
 ```sh
-curl -X POST "http://localhost:8001/upload/?mode=full" \
-  -H "Authorization: Bearer your-secret" \
+curl -X POST "http://localhost:8000/upload/?mode=full" \
+  -H "Authorization: Bearer T8zwjzSzc9R12lUFw8LeuhKZ6BIJd-ITsq6SvuQQVNI" \
   -F "file=@document.pdf"
 ```
 
 **OCR an image file:**
 ```sh
-curl -X POST "http://localhost:8001/upload/" \
-  -H "Authorization: Bearer your-secret" \
+curl -X POST "http://localhost:8000/upload/" \
+  -H "Authorization: Bearer T8zwjzSzc9R12lUFw8LeuhKZ6BIJd-ITsq6SvuQQVNI" \
   -F "file=@screenshot.png"
 ```
 
 **Extract from a Word document:**
 ```sh
-curl -X POST "http://localhost:8001/upload/" \
-  -H "Authorization: Bearer your-secret" \
+curl -X POST "http://localhost:8000/upload/" \
+  -H "Authorization: Bearer T8zwjzSzc9R12lUFw8LeuhKZ6BIJd-ITsq6SvuQQVNI" \
   -F "file=@report.docx"
 ```
 
 **Extract from an Excel file:**
 ```sh
-curl -X POST "http://localhost:8001/upload/" \
-  -H "Authorization: Bearer your-secret" \
+curl -X POST "http://localhost:8000/upload/" \
+  -H "Authorization: Bearer T8zwjzSzc9R12lUFw8LeuhKZ6BIJd-ITsq6SvuQQVNI" \
   -F "file=@data.xlsx"
 ```
 
 **Extract text from a job URL:**
 ```sh
-curl -X POST "http://localhost:8001/extract-url/?correct=false" \
-  -H "Authorization: Bearer your-secret" \
+curl -X POST "http://localhost:8000/extract-url/?correct=false" \
+  -H "Authorization: Bearer T8zwjzSzc9R12lUFw8LeuhKZ6BIJd-ITsq6SvuQQVNI" \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com/jobs/software-engineer"}'
 ```
